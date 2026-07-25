@@ -3,26 +3,26 @@
   "name": "ระบบบันทึกรายรับ-รายจ่าย",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "app.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
+      "src": "app.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "screenshots": [
     {
-      "src": "app-screenshot-mobile.png",
+      "src": "app.png",
       "sizes": "640x1136",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "หน้าจอแสดงผลบนมือถือ"
     },
     {
-      "src": "app-screenshot-desktop.png",
+      "src": "app.png",
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
