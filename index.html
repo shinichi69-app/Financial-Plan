@@ -1,131 +1,205 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker App</title>
+    <title>ระบบบันทึกรายรับ-รายจ่าย</title>
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="app.png">
 
-    <!-- Tailwind CSS & Chart.js -->
+    <!-- Third-Party Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans pb-12">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen pb-12">
 
-    <!-- PWA Custom Install Banner (จะเด้งขึ้นมาถ้าเครื่องยังไม่ได้ติดตั้งแอป) -->
+    <!-- PWA Install Banner -->
     <div id="pwa-install-banner" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white p-4 rounded-xl shadow-2xl border border-indigo-100 flex items-center justify-between z-50 transition-all duration-300">
         <div class="flex items-center space-x-3">
-            <!-- จุดใส่โลโก้แอปของคุณชินอิจิ -->
-            <img src="icon-192.png" alt="App Logo" class="w-12 h-12 rounded-lg object-cover bg-indigo-50">
+            <img src="app.png" alt="App Logo" class="w-12 h-12 rounded-lg object-cover bg-indigo-50 border border-gray-100">
             <div>
                 <h4 class="font-bold text-gray-800 text-sm">ติดตั้ง Expense App</h4>
                 <p class="text-xs text-gray-500">บันทึกรายรับ-รายจ่ายได้สะดวกรวดเร็ว</p>
             </div>
         </div>
         <div class="flex items-center space-x-2">
-            <button id="pwa-close-btn" class="text-gray-400 hover:text-gray-600 text-sm px-2 py-1">ไว้ทีหลัง</button>
-            <button id="pwa-install-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
-                ติดตั้ง
+            <button id="pwa-close-btn" class="text-gray-400 hover:text-gray-600 text-xs px-2 py-1">ไว้ทีหลัง</button>
+            <button id="pwa-install-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-1">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> ติดตั้ง
             </button>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 mt-4">
-        <h1 class="text-3xl font-bold text-center text-indigo-600 mb-8">ระบบบันทึกรายรับ-รายจ่าย</h1>
+    <!-- Main Container -->
+    <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         
-        <!-- Dashboard สรุปยอดการเงิน -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                <h3 class="text-sm font-medium text-gray-500">รายรับทั้งหมด</h3>
-                <p class="text-2xl font-bold text-green-600" id="total-income">฿0.00</p>
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4 border-b border-gray-200 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-600 text-white rounded-xl shadow-md">
+                    <i data-lucide="wallet" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">ระบบบันทึกรายรับ-รายจ่าย</h1>
+                    <p class="text-xs text-gray-500">จัดการการเงินส่วนบุคคลอย่างมีประสิทธิภาพ</p>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
-                <h3 class="text-sm font-medium text-gray-500">รายจ่ายทั้งหมด</h3>
-                <p class="text-2xl font-bold text-red-600" id="total-expense">฿0.00</p>
+            <button onclick="resetAllData()" class="flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition font-medium border border-red-200">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> ล้างข้อมูลทั้งหมด
+            </button>
+        </header>
+
+        <!-- Summary Cards (Dashboard) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">รายรับทั้งหมด</span>
+                    <p class="text-2xl font-extrabold text-emerald-600 mt-1" id="total-income">฿0.00</p>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                <h3 class="text-sm font-medium text-gray-500">ยอดเงินคงเหลือ</h3>
-                <p class="text-2xl font-bold text-indigo-600" id="net-balance">฿0.00</p>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">รายจ่ายทั้งหมด</span>
+                    <p class="text-2xl font-extrabold text-rose-600 mt-1" id="total-expense">฿0.00</p>
+                </div>
+                <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                    <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">ยอดเงินคงเหลือ</span>
+                    <p class="text-2xl font-extrabold text-indigo-600 mt-1" id="net-balance">฿0.00</p>
+                </div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <i data-lucide="scale" class="w-6 h-6"></i>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- ฟอร์มกรอกข้อมูลรายการ -->
-            <div class="bg-white p-6 rounded-xl shadow-sm">
-                <h2 class="text-xl font-semibold mb-4">เพิ่มรายการใหม่</h2>
+        <!-- Form and Chart Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            <!-- Form Card -->
+            <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> เพิ่มรายการใหม่
+                </h2>
                 <form id="transaction-form" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                        <input type="date" id="date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">วันที่</label>
+                        <input type="date" id="date" required class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">ประเภท</label>
-                            <select id="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">ประเภท</label>
+                            <select id="type" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
                                 <option value="expense">รายจ่าย</option>
                                 <option value="income">รายรับ</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">หมวดหมู่</label>
-                            <select id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                                <option value="อาหาร">อาหาร</option>
-                                <option value="เดินทาง">เดินทาง</option>
-                                <option value="ช้อปปิ้ง">ช้อปปิ้ง</option>
-                                <option value="บิล">บิลต่างๆ</option>
-                                <option value="เงินเดือน">เงินเดือน</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">หมวดหมู่</label>
+                            <select id="category" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
+                                <!-- JavaScript จะ Render ตัวเลือกแยกตามประเภทให้อัตโนมัติ -->
                             </select>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
-                        <input type="number" id="amount" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">จำนวนเงิน (บาท)</label>
+                        <input type="number" id="amount" required min="0.01" step="any" placeholder="0.00" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">บันทึกช่วยจำ</label>
-                        <input type="text" id="note" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">บันทึกช่วยจำ</label>
+                        <input type="text" id="note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition">บันทึกรายการ</button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="save" class="w-4 h-4"></i> บันทึกรายการ
+                    </button>
                 </form>
             </div>
 
-            <!-- ส่วนแสดงกราฟสัดส่วนค่าใช้จ่าย -->
-            <div class="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
-                <h2 class="text-xl font-semibold mb-4 w-full">สัดส่วนค่าใช้จ่าย</h2>
-                <div class="w-full max-w-[250px] mb-6">
+            <!-- Chart Card -->
+            <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-800 mb-2 w-full flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-600"></i> สัดส่วนค่าใช้จ่าย
+                </h2>
+                <div class="w-full h-64 flex items-center justify-center">
                     <canvas id="expenseChart"></canvas>
                 </div>
+                <p id="chart-empty-msg" class="text-xs text-gray-400 text-center mt-2 hidden">ไม่มีข้อมูลรายจ่ายสำหรับแสดงผล</p>
             </div>
         </div>
 
-        <!-- ตารางประวัติการทำรายการ -->
-        <div class="bg-white p-6 rounded-xl shadow-sm mt-8 overflow-x-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">ประวัติการทำรายการ</h2>
-                <button onclick="resetAllData()" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-600 hover:text-white transition text-sm font-medium">
-                    🗑️ ล้างข้อมูลทั้งหมด
-                </button>
+        <!-- Transaction History Table -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5 text-indigo-600"></i> ประวัติการทำรายการ
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase">
+                            <th class="py-3 px-4">วันที่</th>
+                            <th class="py-3 px-4">ประเภท</th>
+                            <th class="py-3 px-4">หมวดหมู่</th>
+                            <th class="py-3 px-4">รายละเอียด</th>
+                            <th class="py-3 px-4 text-right">จำนวนเงิน</th>
+                            <th class="py-3 px-4 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-list" class="divide-y divide-gray-100 text-sm">
+                        <!-- รายการจะถูก Render ด้วย JavaScript -->
+                    </tbody>
+                </table>
             </div>
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead>
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">วันที่</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ประเภท</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">หมวดหมู่</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">รายละเอียด</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จำนวนเงิน</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="transaction-list" class="divide-y divide-gray-200">
-                    <!-- ข้อมูลรายการจะถูกเรนเดอร์ด้วย JS -->
-                </tbody>
-            </table>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับแก้ไขรายการ -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-5 h-5 text-indigo-600"></i> แก้ไขรายการ
+            </h3>
+            <form id="edit-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">วันที่</label>
+                    <input type="date" id="edit-date" required class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">ประเภท</label>
+                        <select id="edit-type" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm outline-none">
+                            <option value="expense">รายจ่าย</option>
+                            <option value="income">รายรับ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">หมวดหมู่</label>
+                        <select id="edit-category" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm outline-none"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">จำนวนเงิน (บาท)</label>
+                    <input type="number" id="edit-amount" required min="0.01" step="any" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">บันทึกช่วยจำ</label>
+                    <input type="text" id="edit-note" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm outline-none">
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition">ยกเลิก</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow transition">บันทึกการแก้ไข</button>
+                </div>
+            </form>
         </div>
     </div>
 
