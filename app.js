@@ -1,4 +1,4 @@
-﻿// เก็บข้อมูลไว้ใน LocalStorage หรือใช้ Array ว่างถ้ายังไม่มีข้อมูล
+// เก็บข้อมูลไว้ใน LocalStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let expenseChartInstance = null;
 
@@ -8,6 +8,7 @@ const list = document.getElementById('transaction-list');
 const totalIncomeEl = document.getElementById('total-income');
 const totalExpenseEl = document.getElementById('total-expense');
 const netBalanceEl = document.getElementById('net-balance');
+const resetBtn = document.getElementById('reset-btn'); // เพิ่มตัวแปรปุ่มรีเซ็ต
 
 // ฟังก์ชันเพิ่มรายการใหม่
 form.addEventListener('submit', function(e) {
@@ -33,12 +34,32 @@ function generateID() {
     return Math.floor(Math.random() * 100000000);
 }
 
-// ลบรายการ
+// ลบรายการเดี่ยว
 function deleteTransaction(id) {
     transactions = transactions.filter(t => t.id !== id);
     updateLocalStorage();
     initApp();
 }
+
+// --- ฟังก์ชันล้างข้อมูลทั้งหมด (Reset) ที่เพิ่มใหม่ ---
+resetBtn.addEventListener('click', function() {
+    // เช็คก่อนว่ามีข้อมูลให้ลบไหม
+    if (transactions.length === 0) {
+        alert('ตอนนี้ยังไม่มีข้อมูลให้ลบทิ้งค่ะ');
+        return;
+    }
+    
+    // แจ้งเตือนยืนยันก่อนลบ (Confirmation Dialog) ป้องกันการกดผิด
+    const confirmReset = confirm('ชินอิจิแน่ใจนะคะ ว่าต้องการล้างข้อมูลรายรับ-รายจ่ายทั้งหมด? \n\n*คำเตือน: ข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้ค่ะ');
+    
+    if (confirmReset) {
+        transactions = []; // ล้างข้อมูลใน Array
+        localStorage.removeItem('transactions'); // ลบออกจาก LocalStorage ในเบราว์เซอร์
+        initApp(); // รีเฟรชหน้าจอใหม่
+        alert('ล้างข้อมูลเรียบร้อยแล้วค่ะ เริ่มต้นรอบใหม่กันนะคะ!');
+    }
+});
+// ---------------------------------------------
 
 // อัปเดตข้อมูลลง LocalStorage
 function updateLocalStorage() {
@@ -53,11 +74,9 @@ function updateUI() {
     let totalExpense = 0;
 
     transactions.forEach(t => {
-        // คำนวณยอดรวม
         if(t.type === 'income') totalIncome += t.amount;
         else totalExpense += t.amount;
 
-        // สร้าง HTML แถวในตาราง
         const sign = t.type === 'income' ? '+' : '-';
         const colorClass = t.type === 'income' ? 'text-green-600' : 'text-red-600';
         
@@ -75,7 +94,6 @@ function updateUI() {
         list.appendChild(tr);
     });
 
-    // แสดงยอดรวม
     totalIncomeEl.innerText = `฿${totalIncome.toLocaleString()}`;
     totalExpenseEl.innerText = `฿${totalExpense.toLocaleString()}`;
     netBalanceEl.innerText = `฿${(totalIncome - totalExpense).toLocaleString()}`;
@@ -86,12 +104,9 @@ function updateUI() {
 // อัปเดตกราฟ (Pie Chart)
 function updateChart() {
     const ctx = document.getElementById('expenseChart').getContext('2d');
-    
-    // ดึงเฉพาะรายจ่ายมาทำกราฟ
     const expenses = transactions.filter(t => t.type === 'expense');
-    
-    // จัดกลุ่มรายจ่ายตามหมวดหมู่
     const categoryTotals = {};
+    
     expenses.forEach(t => {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
     });
@@ -99,7 +114,6 @@ function updateChart() {
     const labels = Object.keys(categoryTotals);
     const data = Object.values(categoryTotals);
 
-    // ลบกราฟเก่าทิ้งก่อนวาดใหม่ (ป้องกันบัคกราฟซ้อนกัน)
     if (expenseChartInstance) {
         expenseChartInstance.destroy();
     }
@@ -107,10 +121,10 @@ function updateChart() {
     expenseChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: labels.length > 0 ? labels : ['ไม่มีข้อมูล'],
+            labels: labels.length > 0 ? labels : ['ไม่มีข้อมูลรายจ่าย'],
             datasets: [{
                 data: data.length > 0 ? data : [1],
-                backgroundColor: ['#F87171', '#60A5FA', '#FBBF24', '#34D399', '#A78BFA', '#E5E7EB'],
+                backgroundColor: data.length > 0 ? ['#F87171', '#60A5FA', '#FBBF24', '#34D399', '#A78BFA', '#E5E7EB'] : ['#E5E7EB'],
                 borderWidth: 1
             }]
         },
@@ -125,7 +139,6 @@ function updateChart() {
 
 // เริ่มต้นการทำงาน
 function initApp() {
-    // เซ็ตวันที่ปัจจุบันเป็นค่าเริ่มต้นในฟอร์ม
     document.getElementById('date').valueAsDate = new Date();
     updateUI();
 }
