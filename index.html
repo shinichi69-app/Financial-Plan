@@ -1,100 +1,100 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker by Kim</title>
-    <!-- Tailwind CSS  ”À√—∫ UI -->
+    <!-- Tailwind CSS ‡∏™‡∏≥‡∏´‡∏£‡∏±‡∏ö UI -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js  ”À√—∫°√“ø -->
+    <!-- Chart.js ‡∏™‡∏≥‡∏´‡∏£‡∏±‡∏ö‡∏Å‡∏£‡∏≤‡∏ü -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
     <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 mt-10">
-        <h1 class="text-3xl font-bold text-center text-indigo-600 mb-8">√–∫∫∫—π∑÷°√“¬√—∫-√“¬®Ë“¬</h1>
+        <h1 class="text-3xl font-bold text-center text-indigo-600 mb-8">‡∏£‡∏∞‡∏ö‡∏ö‡∏ö‡∏±‡∏ô‡∏ó‡∏∂‡∏Å‡∏£‡∏≤‡∏¢‡∏£‡∏±‡∏ö-‡∏£‡∏≤‡∏¢‡∏à‡πà‡∏≤‡∏¢</h1>
         
-        <!-- Dashboard  √ÿª¬Õ¥ -->
+        <!-- Dashboard ‡∏™‡∏£‡∏∏‡∏õ‡∏¢‡∏≠‡∏î -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                <h3 class="text-sm font-medium text-gray-500">√“¬√—∫∑—ÈßÀ¡¥</h3>
-                <p class="text-2xl font-bold text-green-600" id="total-income">ﬂ0.00</p>
+                <h3 class="text-sm font-medium text-gray-500">‡∏£‡∏≤‡∏¢‡∏£‡∏±‡∏ö‡∏ó‡∏±‡πâ‡∏á‡∏´‡∏°‡∏î</h3>
+                <p class="text-2xl font-bold text-green-600" id="total-income">‡∏ø0.00</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
-                <h3 class="text-sm font-medium text-gray-500">√“¬®Ë“¬∑—ÈßÀ¡¥</h3>
-                <p class="text-2xl font-bold text-red-600" id="total-expense">ﬂ0.00</p>
+                <h3 class="text-sm font-medium text-gray-500">‡∏£‡∏≤‡∏¢‡∏à‡πà‡∏≤‡∏¢‡∏ó‡∏±‡πâ‡∏á‡∏´‡∏°‡∏î</h3>
+                <p class="text-2xl font-bold text-red-600" id="total-expense">‡∏ø0.00</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                <h3 class="text-sm font-medium text-gray-500">¬Õ¥‡ß‘π§ß‡À≈◊Õ</h3>
-                <p class="text-2xl font-bold text-indigo-600" id="net-balance">ﬂ0.00</p>
+                <h3 class="text-sm font-medium text-gray-500">‡∏¢‡∏≠‡∏î‡πÄ‡∏á‡∏¥‡∏ô‡∏Ñ‡∏á‡πÄ‡∏´‡∏•‡∏∑‡∏≠</h3>
+                <p class="text-2xl font-bold text-indigo-600" id="net-balance">‡∏ø0.00</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- øÕ√Ï¡°√Õ°¢ÈÕ¡Ÿ≈ -->
+            <!-- ‡∏ü‡∏≠‡∏£‡πå‡∏°‡∏Å‡∏£‡∏≠‡∏Å‡∏Ç‡πâ‡∏≠‡∏°‡∏π‡∏• -->
             <div class="bg-white p-6 rounded-xl shadow-sm">
-                <h2 class="text-xl font-semibold mb-4">‡æ‘Ë¡√“¬°“√„À¡Ë</h2>
+                <h2 class="text-xl font-semibold mb-4">‡πÄ‡∏û‡∏¥‡πà‡∏°‡∏£‡∏≤‡∏¢‡∏Å‡∏≤‡∏£‡πÉ‡∏´‡∏°‡πà</h2>
                 <form id="transaction-form" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">«—π∑’Ë</label>
+                        <label class="block text-sm font-medium text-gray-700">‡∏ß‡∏±‡∏ô‡∏ó‡∏µ‡πà</label>
                         <input type="date" id="date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">ª√–‡¿∑</label>
+                            <label class="block text-sm font-medium text-gray-700">‡∏õ‡∏£‡∏∞‡πÄ‡∏†‡∏ó</label>
                             <select id="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                                <option value="expense">√“¬®Ë“¬</option>
-                                <option value="income">√“¬√—∫</option>
+                                <option value="expense">‡∏£‡∏≤‡∏¢‡∏à‡πà‡∏≤‡∏¢</option>
+                                <option value="income">‡∏£‡∏≤‡∏¢‡∏£‡∏±‡∏ö</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">À¡«¥À¡ŸË</label>
+                            <label class="block text-sm font-medium text-gray-700">‡∏´‡∏°‡∏ß‡∏î‡∏´‡∏°‡∏π‡πà</label>
                             <select id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                                <option value="Õ“À“√">Õ“À“√</option>
-                                <option value="‡¥‘π∑“ß">‡¥‘π∑“ß</option>
-                                <option value="™ÈÕªª‘Èß">™ÈÕªª‘Èß</option>
-                                <option value="∫‘≈">∫‘≈µË“ßÊ</option>
-                                <option value="‡ß‘π‡¥◊Õπ">‡ß‘π‡¥◊Õπ</option>
-                                <option value="Õ◊ËπÊ">Õ◊ËπÊ</option>
+                                <option value="‡∏≠‡∏≤‡∏´‡∏≤‡∏£">‡∏≠‡∏≤‡∏´‡∏≤‡∏£</option>
+                                <option value="‡πÄ‡∏î‡∏¥‡∏ô‡∏ó‡∏≤‡∏á">‡πÄ‡∏î‡∏¥‡∏ô‡∏ó‡∏≤‡∏á</option>
+                                <option value="‡∏ä‡πâ‡∏≠‡∏õ‡∏õ‡∏¥‡πâ‡∏á">‡∏ä‡πâ‡∏≠‡∏õ‡∏õ‡∏¥‡πâ‡∏á</option>
+                                <option value="‡∏ö‡∏¥‡∏•">‡∏ö‡∏¥‡∏•‡∏ï‡πà‡∏≤‡∏á‡πÜ</option>
+                                <option value="‡πÄ‡∏á‡∏¥‡∏ô‡πÄ‡∏î‡∏∑‡∏≠‡∏ô">‡πÄ‡∏á‡∏¥‡∏ô‡πÄ‡∏î‡∏∑‡∏≠‡∏ô</option>
+                                <option value="‡∏≠‡∏∑‡πà‡∏ô‡πÜ">‡∏≠‡∏∑‡πà‡∏ô‡πÜ</option>
                             </select>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">®”π«π‡ß‘π (∫“∑)</label>
+                        <label class="block text-sm font-medium text-gray-700">‡∏à‡∏≥‡∏ô‡∏ß‡∏ô‡πÄ‡∏á‡∏¥‡∏ô (‡∏ö‡∏≤‡∏ó)</label>
                         <input type="number" id="amount" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">∫—π∑÷°™Ë«¬®”</label>
+                        <label class="block text-sm font-medium text-gray-700">‡∏ö‡∏±‡∏ô‡∏ó‡∏∂‡∏Å‡∏ä‡πà‡∏ß‡∏¢‡∏à‡∏≥</label>
                         <input type="text" id="note" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition">∫—π∑÷°√“¬°“√</button>
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition">‡∏ö‡∏±‡∏ô‡∏ó‡∏∂‡∏Å‡∏£‡∏≤‡∏¢‡∏Å‡∏≤‡∏£</button>
                 </form>
             </div>
 
-            <!-- °√“ø·≈–ª√–«—µ‘ -->
+            <!-- ‡∏Å‡∏£‡∏≤‡∏ü‡πÅ‡∏•‡∏∞‡∏õ‡∏£‡∏∞‡∏ß‡∏±‡∏ï‡∏¥ -->
             <div class="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
-                <h2 class="text-xl font-semibold mb-4 w-full"> —¥ Ë«π§Ë“„™È®Ë“¬</h2>
+                <h2 class="text-xl font-semibold mb-4 w-full">‡∏™‡∏±‡∏î‡∏™‡πà‡∏ß‡∏ô‡∏Ñ‡πà‡∏≤‡πÉ‡∏ä‡πâ‡∏à‡πà‡∏≤‡∏¢</h2>
                 <div class="w-full max-w-[250px] mb-6">
                     <canvas id="expenseChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- µ“√“ßª√–«—µ‘¬ÈÕπÀ≈—ß -->
+        <!-- ‡∏ï‡∏≤‡∏£‡∏≤‡∏á‡∏õ‡∏£‡∏∞‡∏ß‡∏±‡∏ï‡∏¥‡∏¢‡πâ‡∏≠‡∏ô‡∏´‡∏•‡∏±‡∏á -->
         <div class="bg-white p-6 rounded-xl shadow-sm mt-8 overflow-x-auto">
-            <h2 class="text-xl font-semibold mb-4">ª√–«—µ‘°“√∑”√“¬°“√</h2>
+            <h2 class="text-xl font-semibold mb-4">‡∏õ‡∏£‡∏∞‡∏ß‡∏±‡∏ï‡∏¥‡∏Å‡∏≤‡∏£‡∏ó‡∏≥‡∏£‡∏≤‡∏¢‡∏Å‡∏≤‡∏£</h2>
             <table class="min-w-full divide-y divide-gray-200">
                 <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">«—π∑’Ë</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ª√–‡¿∑</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">À¡«¥À¡ŸË</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">√“¬≈–‡Õ’¬¥</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">®”π«π‡ß‘π</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">®—¥°“√</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">‡∏ß‡∏±‡∏ô‡∏ó‡∏µ‡πà</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">‡∏õ‡∏£‡∏∞‡πÄ‡∏†‡∏ó</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">‡∏´‡∏°‡∏ß‡∏î‡∏´‡∏°‡∏π‡πà</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">‡∏£‡∏≤‡∏¢‡∏•‡∏∞‡πÄ‡∏≠‡∏µ‡∏¢‡∏î</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">‡∏à‡∏≥‡∏ô‡∏ß‡∏ô‡πÄ‡∏á‡∏¥‡∏ô</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">‡∏à‡∏±‡∏î‡∏Å‡∏≤‡∏£</th>
                     </tr>
                 </thead>
                 <tbody id="transaction-list" class="divide-y divide-gray-200">
-                    <!-- ¢ÈÕ¡Ÿ≈®–∂Ÿ°¥÷ß¡“· ¥ß∑’Ëπ’ËºË“π JS -->
+                    <!-- ‡∏Ç‡πâ‡∏≠‡∏°‡∏π‡∏•‡∏à‡∏∞‡∏ñ‡∏π‡∏Å‡∏î‡∏∂‡∏á‡∏°‡∏≤‡πÅ‡∏™‡∏î‡∏á‡∏ó‡∏µ‡πà‡∏ô‡∏µ‡πà‡∏ú‡πà‡∏≤‡∏ô JS -->
                 </tbody>
             </table>
         </div>
