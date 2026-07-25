@@ -4,8 +4,8 @@ const ASSETS_TO_CACHE = [
   './index.html',
   './app.js',
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
+  './app.png',
+  './app.png',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
