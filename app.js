@@ -1,111 +1,177 @@
-// โหลดข้อมูลเดิมจาก LocalStorage (ถ้ามี) หรือกำหนดเป็น อาเรย์ว่าง
-let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-let expenseChartInstance = null;
+/**
+ * Expense Tracker Logic & PWA Controller
+ * Architecture: Event-Driven State-Based Management
+ */
 
-// อ้างอิงElement ต่างๆ ใน DOM
-const form = document.getElementById('transaction-form');
-const list = document.getElementById('transaction-list');
+// --- CATEGORY CONFIGURATIONS ---
+const CATEGORIES = {
+    expense: ['อาหาร', 'เดินทาง', 'ช้อปปิ้ง', 'บิลต่างๆ', 'ความบันเทิง', 'อื่นๆ'],
+    income: ['เงินเดือน', 'โบนัส', 'ขายของออนไลน์', 'การลงทุน', 'อื่นๆ']
+};
+
+// --- STATE MANAGEMENT ---
+let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+let expenseChart = null;
+
+// --- DOM ELEMENTS ---
+const transactionForm = document.getElementById('transaction-form');
+const transactionList = document.getElementById('transaction-list');
 const totalIncomeEl = document.getElementById('total-income');
 const totalExpenseEl = document.getElementById('total-expense');
 const netBalanceEl = document.getElementById('net-balance');
+const typeSelect = document.getElementById('type');
+const categorySelect = document.getElementById('category');
+const editTypeSelect = document.getElementById('edit-type');
+const editCategorySelect = document.getElementById('edit-category');
 
-// ฟังก์ชันเพิ่มรายการใหม่ผ่านฟอร์ม
-form.addEventListener('submit', function(e) {
-    e.preventDefault();
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    // กำหนดวันที่ปัจจุบันในฟอร์ม
+    document.getElementById('date').valueToDate = new Date();
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+    // อัปเดตตัวเลือกหมวดหมู่ตามประเภทแรกเริ่ม
+    updateCategoryOptions(typeSelect.value, categorySelect);
     
-    const transaction = {
-        id: generateID(),
+    // โหลด Render ข้อมูลตั้งต้น
+    renderApp();
+
+    // เริ่มการทำงานของ Lucide Icons
+    if (window.lucide) lucide.createIcons();
+
+    // ลงทะเบียน Service Worker
+    registerServiceWorker();
+});
+
+// --- EVENT LISTENERS ---
+typeSelect.addEventListener('change', (e) => updateCategoryOptions(e.target.value, categorySelect));
+editTypeSelect.addEventListener('change', (e) => updateCategoryOptions(e.target.value, editCategorySelect));
+
+transactionForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newTransaction = {
+        id: Date.now().toString(),
         date: document.getElementById('date').value,
         type: document.getElementById('type').value,
         category: document.getElementById('category').value,
         amount: parseFloat(document.getElementById('amount').value),
-        note: document.getElementById('note').value
+        note: document.getElementById('note').value.trim()
     };
 
-    transactions.push(transaction);
-    updateLocalStorage();
-    initApp();
-    form.reset();
+    transactions.unshift(newTransaction);
+    saveAndRender();
+    transactionForm.reset();
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    updateCategoryOptions(typeSelect.value, categorySelect);
 });
 
-// สร้าง ID สุ่มเพื่อใช้ระบุแต่ละรายการ
-function generateID() {
-    return Math.floor(Math.random() * 100000000);
+// --- CORE FUNCTIONS ---
+
+function updateCategoryOptions(selectedType, targetSelect) {
+    targetSelect.innerHTML = '';
+    CATEGORIES[selectedType].forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        targetSelect.appendChild(option);
+    });
 }
 
-// ฟังก์ชันลบรายการเฉพาะเจาะจง
-function deleteTransaction(id) {
-    transactions = transactions.filter(t => t.id !== id);
-    updateLocalStorage();
-    initApp();
+function saveAndRender() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    renderApp();
 }
 
-// ฟังก์ชันล้างข้อมูลทั้งหมด (Reset Data) พร้อมกล่องข้อความยืนยัน
-function resetAllData() {
+function renderApp() {
+    renderSummary();
+    renderTransactions();
+    renderChart();
+    if (window.lucide) lucide.createIcons();
+}
+
+// 1. คำนวณยอดเงินและ Render Dashboard
+function renderSummary() {
+    const income = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+    const expense = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+    const balance = income - expense;
+
+    totalIncomeEl.textContent = `฿${income.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+    totalExpenseEl.textContent = `฿${expense.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+    netBalanceEl.textContent = `฿${balance.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+}
+
+// 2. Render ตารางประวัติการทำรายการ
+function renderTransactions() {
+    transactionList.innerHTML = '';
+
     if (transactions.length === 0) {
-        alert('ตอนนี้ยังไม่มีข้อมูลให้ลบทิ้งค่ะ');
+        transactionList.innerHTML = `
+            <tr>
+                <td colspan="6" class="py-8 text-center text-gray-400 text-xs">
+                    ยังไม่มีข้อมูลรายการบันทึก
+                </td>
+            </tr>
+        `;
         return;
     }
-    
-    const confirmReset = confirm('แน่ใจหรือไม่ว่าต้องการล้างข้อมูลรายรับ-รายจ่ายทั้งหมด? \n\n*คำเตือน: ข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้');
-    
-    if (confirmReset) {
-        transactions = [];
-        localStorage.removeItem('transactions');
-        initApp();
-        alert('ล้างข้อมูลเรียบร้อยแล้ว');
-    }
-}
-
-// อัปเดตข้อมูลลง LocalStorage ของเบราว์เซอร์
-function updateLocalStorage() {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-}
-
-// ฟังก์ชันอัปเดตหน้าจอ UI (คำนวณเงินรวม และแสดงตาราง)
-function updateUI() {
-    list.innerHTML = '';
-    
-    let totalIncome = 0;
-    let totalExpense = 0;
 
     transactions.forEach(t => {
-        if(t.type === 'income') {
-            totalIncome += t.amount;
-        } else {
-            totalExpense += t.amount;
-        }
-
-        const sign = t.type === 'income' ? '+' : '-';
-        const colorClass = t.type === 'income' ? 'text-green-600' : 'text-red-600';
-        
         const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50 transition';
+
+        const isIncome = t.type === 'income';
+        const amountClass = isIncome ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold';
+        const typeBadge = isIncome 
+            ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] font-medium px-2 py-0.5 rounded-full">รายรับ</span>'
+            : '<span class="bg-rose-100 text-rose-800 text-[10px] font-medium px-2 py-0.5 rounded-full">รายจ่าย</span>';
+
         tr.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.date}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm ${colorClass}">${t.type === 'income' ? 'รายรับ' : 'รายจ่าย'}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.category}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.note}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${colorClass}">${sign}฿${t.amount.toLocaleString()}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button onclick="deleteTransaction(${t.id})" class="text-red-500 hover:text-red-700">ลบ</button>
+            <td class="py-3 px-4 text-gray-600 whitespace-nowrap">${formatDate(t.date)}</td>
+            <td class="py-3 px-4 whitespace-nowrap">${typeBadge}</td>
+            <td class="py-3 px-4 text-gray-800 font-medium whitespace-nowrap">${t.category}</td>
+            <td class="py-3 px-4 text-gray-500 max-w-xs truncate">${t.note || '-'}</td>
+            <td class="py-3 px-4 text-right whitespace-nowrap ${amountClass}">
+                ${isIncome ? '+' : '-'}฿${t.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick="openEditModal('${t.id}')" class="text-gray-400 hover:text-indigo-600 transition">
+                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-rose-600 transition">
+                        <i data-lucide="trash" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </td>
         `;
-        list.appendChild(tr);
+        transactionList.appendChild(tr);
     });
-
-    totalIncomeEl.innerText = `฿${totalIncome.toLocaleString()}`;
-    totalExpenseEl.innerText = `฿${totalExpense.toLocaleString()}`;
-    netBalanceEl.innerText = `฿${(totalIncome - totalExpense).toLocaleString()}`;
-
-    updateChart();
 }
 
-// ฟังก์ชันอัปเดตกราฟโดนัท (Doughnut Chart) แสดงสัดส่วนหมวดหมู่รายจ่าย
-function updateChart() {
+// 3. Render Chart.js
+function renderChart() {
     const ctx = document.getElementById('expenseChart').getContext('2d');
+    const emptyMsg = document.getElementById('chart-empty-msg');
+
+    // กรองเฉพาะรายการที่เป็นรายจ่าย
     const expenses = transactions.filter(t => t.type === 'expense');
+
+    if (expenses.length === 0) {
+        if (expenseChart) expenseChart.destroy();
+        emptyMsg.classList.remove('hidden');
+        return;
+    }
+
+    emptyMsg.classList.add('hidden');
+
+    // รวมยอดค่าใช้จ่ายแยกตามหมวดหมู่
     const categoryTotals = {};
-    
     expenses.forEach(t => {
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
     });
@@ -113,33 +179,142 @@ function updateChart() {
     const labels = Object.keys(categoryTotals);
     const data = Object.values(categoryTotals);
 
-    if (expenseChartInstance) {
-        expenseChartInstance.destroy();
+    if (expenseChart) {
+        expenseChart.destroy();
     }
 
-    expenseChartInstance = new Chart(ctx, {
+    expenseChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: labels.length > 0 ? labels : ['ไม่มีข้อมูลรายจ่าย'],
+            labels: labels,
             datasets: [{
-                data: data.length > 0 ? data : [1],
-                backgroundColor: data.length > 0 ? ['#F87171', '#60A5FA', '#FBBF24', '#34D399', '#A78BFA', '#E5E7EB'] : ['#E5E7EB'],
-                borderWidth: 1
+                data: data,
+                backgroundColor: [
+                    '#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#64748b'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
-            }
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12, font: { size: 11 } }
+                }
+            },
+            cutout: '70%'
         }
     });
 }
 
-// ตั้งค่าเริ่มต้นเมื่อเปิดโปรแกรม
-function initApp() {
-    document.getElementById('date').valueAsDate = new Date();
-    updateUI();
+// --- EDIT & DELETE ACTIONS ---
+
+function deleteTransaction(id) {
+    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveAndRender();
+    }
 }
 
-initApp();
+function openEditModal(id) {
+    const target = transactions.find(t => t.id === id);
+    if (!target) return;
+
+    document.getElementById('edit-id').value = target.id;
+    document.getElementById('edit-date').value = target.date;
+    document.getElementById('edit-type').value = target.type;
+    
+    updateCategoryOptions(target.type, editCategorySelect);
+    document.getElementById('edit-category').value = target.category;
+    
+    document.getElementById('edit-amount').value = target.amount;
+    document.getElementById('edit-note').value = target.note || '';
+
+    const modal = document.getElementById('edit-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('edit-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.getElementById('edit-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('edit-id').value;
+    const index = transactions.findIndex(t => t.id === id);
+
+    if (index !== -1) {
+        transactions[index] = {
+            id: id,
+            date: document.getElementById('edit-date').value,
+            type: document.getElementById('edit-type').value,
+            category: document.getElementById('edit-category').value,
+            amount: parseFloat(document.getElementById('edit-amount').value),
+            note: document.getElementById('edit-note').value.trim()
+        };
+        saveAndRender();
+        closeEditModal();
+    }
+});
+
+function resetAllData() {
+    if (confirm('คำเตือน: ข้อมูลทั้งหมดจะถูกลบอย่างถาวร คุณแน่ใจหรือไม่?')) {
+        transactions = [];
+        saveAndRender();
+    }
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${parseInt(year) + 543}`;
+}
+
+// --- PWA INSTALLATION CONTROLLER ---
+
+let deferredPrompt;
+const pwaBanner = document.getElementById('pwa-install-banner');
+const installBtn = document.getElementById('pwa-install-btn');
+const closeBtn = document.getElementById('pwa-close-btn');
+
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW Registered successfully'))
+                .catch(err => console.error('SW Registration failed', err));
+        });
+    }
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (pwaBanner) {
+        pwaBanner.classList.remove('hidden');
+    }
+});
+
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to prompt: ${outcome}`);
+            deferredPrompt = null;
+            pwaBanner.classList.add('hidden');
+        }
+    });
+}
+
+if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+        pwaBanner.classList.add('hidden');
+    });
+}
