@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker by Kim</title>
+    <!-- Tailwind CSS สำหรับ UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js สำหรับกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 mt-10">
+        <h1 class="text-3xl font-bold text-center text-indigo-600 mb-8">ระบบบันทึกรายรับ-รายจ่าย</h1>
+        
+        <!-- Dashboard สรุปยอด -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                <h3 class="text-sm font-medium text-gray-500">รายรับทั้งหมด</h3>
+                <p class="text-2xl font-bold text-green-600" id="total-income">฿0.00</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
+                <h3 class="text-sm font-medium text-gray-500">รายจ่ายทั้งหมด</h3>
+                <p class="text-2xl font-bold text-red-600" id="total-expense">฿0.00</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                <h3 class="text-sm font-medium text-gray-500">ยอดเงินคงเหลือ</h3>
+                <p class="text-2xl font-bold text-indigo-600" id="net-balance">฿0.00</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- ฟอร์มกรอกข้อมูล -->
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="text-xl font-semibold mb-4">เพิ่มรายการใหม่</h2>
+                <form id="transaction-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">วันที่</label>
+                        <input type="date" id="date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ประเภท</label>
+                            <select id="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <option value="expense">รายจ่าย</option>
+                                <option value="income">รายรับ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">หมวดหมู่</label>
+                            <select id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <option value="อาหาร">อาหาร</option>
+                                <option value="เดินทาง">เดินทาง</option>
+                                <option value="ช้อปปิ้ง">ช้อปปิ้ง</option>
+                                <option value="บิล">บิลต่างๆ</option>
+                                <option value="เงินเดือน">เงินเดือน</option>
+                                <option value="อื่นๆ">อื่นๆ</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
+                        <input type="number" id="amount" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">บันทึกช่วยจำ</label>
+                        <input type="text" id="note" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700 transition">บันทึกรายการ</button>
+                </form>
+            </div>
+
+            <!-- กราฟและประวัติ -->
+            <div class="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
+                <h2 class="text-xl font-semibold mb-4 w-full">สัดส่วนค่าใช้จ่าย</h2>
+                <div class="w-full max-w-[250px] mb-6">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ตารางประวัติย้อนหลัง -->
+        <div class="bg-white p-6 rounded-xl shadow-sm mt-8 overflow-x-auto">
+            <h2 class="text-xl font-semibold mb-4">ประวัติการทำรายการ</h2>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">วันที่</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ประเภท</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">หมวดหมู่</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">รายละเอียด</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จำนวนเงิน</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="transaction-list" class="divide-y divide-gray-200">
+                    <!-- ข้อมูลจะถูกดึงมาแสดงที่นี่ผ่าน JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
