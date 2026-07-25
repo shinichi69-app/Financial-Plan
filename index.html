@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker by Kim</title>
+    <title>Expense Tracker App</title>
+    <!-- โหลด Tailwind CSS สำหรับตกแต่ง UI ให้ทันสมัยและ Responsive -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Chart.js สำหรับแสดงกราฟสัดส่วนค่าใช้จ่าย -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
     <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 mt-10">
         <h1 class="text-3xl font-bold text-center text-indigo-600 mb-8">ระบบบันทึกรายรับ-รายจ่าย</h1>
         
-        <!-- Dashboard สรุปยอด -->
+        <!-- Dashboard สรุปยอดการเงิน -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
                 <h3 class="text-sm font-medium text-gray-500">รายรับทั้งหมด</h3>
@@ -28,7 +30,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- ฟอร์มกรอกข้อมูล -->
+            <!-- ฟอร์มกรอกข้อมูลรายการ -->
             <div class="bg-white p-6 rounded-xl shadow-sm">
                 <h2 class="text-xl font-semibold mb-4">เพิ่มรายการใหม่</h2>
                 <form id="transaction-form" class="space-y-4">
@@ -68,7 +70,7 @@
                 </form>
             </div>
 
-            <!-- กราฟ -->
+            <!-- ส่วนแสดงกราฟสัดส่วนค่าใช้จ่าย -->
             <div class="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
                 <h2 class="text-xl font-semibold mb-4 w-full">สัดส่วนค่าใช้จ่าย</h2>
                 <div class="w-full max-w-[250px] mb-6">
@@ -77,12 +79,12 @@
             </div>
         </div>
 
-        <!-- ตารางประวัติย้อนหลัง พร้อมปุ่ม Reset -->
+        <!-- ตารางประวัติการทำรายการ และปุ่มจัดการรีเซ็ต -->
         <div class="bg-white p-6 rounded-xl shadow-sm mt-8 overflow-x-auto">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">ประวัติการทำรายการ</h2>
-                <!-- ปุ่มรีเซ็ตข้อมูล -->
-                <button id="reset-btn" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-600 hover:text-white transition text-sm font-medium">
+                <!-- ปุ่มล้างข้อมูลทั้งหมดแบบเรียกใช้งานฟังก์ชันโดยตรงผ่าน onclick -->
+                <button onclick="resetAllData()" class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-600 hover:text-white transition text-sm font-medium">
                     🗑️ ล้างข้อมูลทั้งหมด
                 </button>
             </div>
@@ -98,12 +100,13 @@
                     </tr>
                 </thead>
                 <tbody id="transaction-list" class="divide-y divide-gray-200">
-                    <!-- ข้อมูลจะถูกดึงมาแสดงที่นี่ผ่าน JS -->
+                    <!-- ข้อมูลรายการจะถูกเรนเดอร์เข้ามาที่นี่ด้วย JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- เชื่อมโยงไฟล์ JavaScript หลัก -->
     <script src="app.js"></script>
 </body>
 </html>
