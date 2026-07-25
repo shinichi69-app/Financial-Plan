@@ -1,16 +1,15 @@
-// เก็บข้อมูลไว้ใน LocalStorage
+// โหลดข้อมูลเดิมจาก LocalStorage (ถ้ามี) หรือกำหนดเป็น อาเรย์ว่าง
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let expenseChartInstance = null;
 
-// อ้างอิง DOM Elements
+// อ้างอิงElement ต่างๆ ใน DOM
 const form = document.getElementById('transaction-form');
 const list = document.getElementById('transaction-list');
 const totalIncomeEl = document.getElementById('total-income');
 const totalExpenseEl = document.getElementById('total-expense');
 const netBalanceEl = document.getElementById('net-balance');
-const resetBtn = document.getElementById('reset-btn'); // เพิ่มตัวแปรปุ่มรีเซ็ต
 
-// ฟังก์ชันเพิ่มรายการใหม่
+// ฟังก์ชันเพิ่มรายการใหม่ผ่านฟอร์ม
 form.addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -29,44 +28,41 @@ form.addEventListener('submit', function(e) {
     form.reset();
 });
 
-// สร้าง ID แบบสุ่ม
+// สร้าง ID สุ่มเพื่อใช้ระบุแต่ละรายการ
 function generateID() {
     return Math.floor(Math.random() * 100000000);
 }
 
-// ลบรายการเดี่ยว
+// ฟังก์ชันลบรายการเฉพาะเจาะจง
 function deleteTransaction(id) {
     transactions = transactions.filter(t => t.id !== id);
     updateLocalStorage();
     initApp();
 }
 
-// --- ฟังก์ชันล้างข้อมูลทั้งหมด (Reset) ที่เพิ่มใหม่ ---
-resetBtn.addEventListener('click', function() {
-    // เช็คก่อนว่ามีข้อมูลให้ลบไหม
+// ฟังก์ชันล้างข้อมูลทั้งหมด (Reset Data) พร้อมกล่องข้อความยืนยัน
+function resetAllData() {
     if (transactions.length === 0) {
         alert('ตอนนี้ยังไม่มีข้อมูลให้ลบทิ้งค่ะ');
         return;
     }
     
-    // แจ้งเตือนยืนยันก่อนลบ (Confirmation Dialog) ป้องกันการกดผิด
-    const confirmReset = confirm('ชินอิจิแน่ใจนะคะ ว่าต้องการล้างข้อมูลรายรับ-รายจ่ายทั้งหมด? \n\n*คำเตือน: ข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้ค่ะ');
+    const confirmReset = confirm('แน่ใจหรือไม่ว่าต้องการล้างข้อมูลรายรับ-รายจ่ายทั้งหมด? \n\n*คำเตือน: ข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้');
     
     if (confirmReset) {
-        transactions = []; // ล้างข้อมูลใน Array
-        localStorage.removeItem('transactions'); // ลบออกจาก LocalStorage ในเบราว์เซอร์
-        initApp(); // รีเฟรชหน้าจอใหม่
-        alert('ล้างข้อมูลเรียบร้อยแล้วค่ะ เริ่มต้นรอบใหม่กันนะคะ!');
+        transactions = [];
+        localStorage.removeItem('transactions');
+        initApp();
+        alert('ล้างข้อมูลเรียบร้อยแล้ว');
     }
-});
-// ---------------------------------------------
+}
 
-// อัปเดตข้อมูลลง LocalStorage
+// อัปเดตข้อมูลลง LocalStorage ของเบราว์เซอร์
 function updateLocalStorage() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
-// อัปเดต UI หน้าจอ
+// ฟังก์ชันอัปเดตหน้าจอ UI (คำนวณเงินรวม และแสดงตาราง)
 function updateUI() {
     list.innerHTML = '';
     
@@ -74,8 +70,11 @@ function updateUI() {
     let totalExpense = 0;
 
     transactions.forEach(t => {
-        if(t.type === 'income') totalIncome += t.amount;
-        else totalExpense += t.amount;
+        if(t.type === 'income') {
+            totalIncome += t.amount;
+        } else {
+            totalExpense += t.amount;
+        }
 
         const sign = t.type === 'income' ? '+' : '-';
         const colorClass = t.type === 'income' ? 'text-green-600' : 'text-red-600';
@@ -101,7 +100,7 @@ function updateUI() {
     updateChart();
 }
 
-// อัปเดตกราฟ (Pie Chart)
+// ฟังก์ชันอัปเดตกราฟโดนัท (Doughnut Chart) แสดงสัดส่วนหมวดหมู่รายจ่าย
 function updateChart() {
     const ctx = document.getElementById('expenseChart').getContext('2d');
     const expenses = transactions.filter(t => t.type === 'expense');
@@ -137,7 +136,7 @@ function updateChart() {
     });
 }
 
-// เริ่มต้นการทำงาน
+// ตั้งค่าเริ่มต้นเมื่อเปิดโปรแกรม
 function initApp() {
     document.getElementById('date').valueAsDate = new Date();
     updateUI();
